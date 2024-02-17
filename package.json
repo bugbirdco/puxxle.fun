@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
-    "build-only": "vite build --outDir",
+    "build-only": "mv docs/CNAME CNAME && vite build --outDir docs/ && mv CNAME docs/CNAME",
     "type-check": "vue-tsc --build --force"
   },
   "dependencies": {
