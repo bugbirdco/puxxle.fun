@@ -3,13 +3,13 @@
     <h1 class="text-center mb-4">Solve for X</h1>
     <div>
       <template v-for="line in lines">
-        <div class="d-flex py-2 px-3">
+        <div class="d-flex justify-content-center py-2 px-4">
           <div v-for="item in line.output" class="item mx-1" :class="itemClass(line, item)">
             {{ item.value }}
           </div>
         </div>
       </template>
-      <div class="mx-3 px-1 mt-2">
+      <div class="mx-4 px-3 mt-2">
         <div class="row g-2">
           <div class="col col-9 d-flex flex-column align-items-center">
             <ConfettiExplosion v-if="hasWon" :force="0.7"/>
@@ -135,10 +135,10 @@ function add() {
 // #F0EC57
 // #EE4266
 .item {
-  width: 5rem;
-  max-width: calc(calc(100vw - 4rem) / 5);
-  height: 5rem;
-  max-height: calc(calc(100vw - 4rem) / 5);
+  width: 4rem;
+  max-width: calc(calc(100vw - 7rem) / 5);
+  height: 4rem;
+  max-height: calc(calc(100vw - 7rem) / 5);
 
   border: 1px solid #aaa;
   border-radius: 1rem;
@@ -146,7 +146,7 @@ function add() {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2.5rem;
+  font-size: 2rem;
 
   &.is-invalid {
     background-color: #aaa;
