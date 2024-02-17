@@ -11,11 +11,12 @@
       </template>
       <div class="mx-2 mt-2">
         <div class="row g-2">
-          <div class="col col-9">
+          <div class="col col-9 d-flex flex-column align-items-center">
+            <ConfettiExplosion v-if="hasWon" :force="0.7"/>
             <input v-model="prompt" :disabled="hasWon" class="form-control form-control-lg" @keydown.enter="add"/>
           </div>
           <div class="col">
-            <button type="button" class="btn btn-primary btn-lg w-100 h-100" @click="add">Go</button>
+            <button type="button" :disabled="hasWon" class="btn btn-primary btn-lg w-100 h-100" @click="add">Go</button>
           </div>
         </div>
       </div>
@@ -25,11 +26,12 @@
 
 <script lang="ts" setup>
 //== GENERAL IMPORTS ==//
+import {computed, ref} from "vue";
 
 //== COMPONENT IMPORT ==//
+import ConfettiExplosion from "vue-confetti-explosion";
 
 //== TYPES & INTERFACES ==//
-import {computed, ref} from "vue";
 
 interface Attempt {
   value: string,
@@ -133,8 +135,11 @@ function add() {
 // #F0EC57
 // #EE4266
 .item {
-  height: 5rem;
   width: 5rem;
+  max-width: calc(calc(100vw - 3rem) / 5);
+  height: 5rem;
+  max-height: calc(calc(100vw - 3rem) / 5);
+
   border: 1px solid #aaa;
   border-radius: 1rem;
   box-shadow: 0 0 0 0 rgba(0, 0, 0, .5);

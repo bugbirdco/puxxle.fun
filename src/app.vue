@@ -1,5 +1,5 @@
 <template>
-  <div class="w-100 vh-100 d-flex flex-column bg-dark text-light">
+  <div class="w-100 vh-100 screen-w d-flex flex-column bg-dark text-light">
     <div class="flex-grow-1 d-flex justify-content-center">
       <router-view/>
     </div>
@@ -38,5 +38,8 @@ import {version} from '../package.json'
 </script>
 
 <style lang="scss">
-
+.screen-w {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
 </style>
