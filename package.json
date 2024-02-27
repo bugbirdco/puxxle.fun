@@ -1,10 +1,11 @@
 {
   "name": "puxxle.fun",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "testbed": "vite --mode testbed",
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
     "build-only": "mv docs/CNAME CNAME && vite build --outDir docs/ && mv CNAME docs/CNAME",

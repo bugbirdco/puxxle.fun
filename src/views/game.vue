@@ -1,6 +1,5 @@
 <template>
   <div class="mt-5">
-    <h1 class="text-center mb-4">Solve for X</h1>
     <div>
       <template v-for="line in lines">
         <div class="d-flex justify-content-center py-2 px-4">
@@ -26,13 +25,13 @@
 
 <script lang="ts" setup>
 //== GENERAL IMPORTS ==//
-import {computed, ref} from "vue";
+import {computed, ref, onBeforeMount} from "vue";
+import {UniversleEdition} from "@universle/sdk/src";
 
 //== COMPONENT IMPORT ==//
 import ConfettiExplosion from "vue-confetti-explosion";
 
 //== TYPES & INTERFACES ==//
-
 interface Attempt {
   value: string,
   is_match: boolean
@@ -47,49 +46,55 @@ interface Line {
 }
 
 //== STORE IMPORT ==//
+import {useAppStore} from "@/stores/app";
 
 //== INJECT & PROPS & EMITS =//
+const props = defineProps<{
+  edition?: string
+}>()
 
 //== STORE BINDING ==//
+const appStore = useAppStore()
 
 //== DATA & STATE ==//
-const input = ref<any[]>([1, 2, 3, 4, 5])
-const output = ref<any[]>([2, 4, 6, 8, 10])
-const attempts = ref<Line[]>([])
+const edition = ref<UniversleEdition<'positional_array'>>()
+const input = ref<any[]>()
 const prompt = ref<string>('x')
+const attempts = ref<Line[]>([])
 const hasWon = ref<boolean>(false)
 
 //== COMPUTED ==//
-const attempt = computed<Attempt[]>(() => {
-  const values: Attempt[] = []
-  for (let i in input.value) {
+const attempt = computed<Attempt[] | null>(() => {
+  if (!edition.value || !input.value) return null
+
+  const transformed = input.value.map((v) => {
     try {
+      // Apply the transformation to the item
       let response = eval(`((x) => {
         return ${prompt.value}
       })
-      (${JSON.stringify(input.value[i])})`)
-      response = response ? (response.toString().substring(0, 3)) : ''
-      const isMatch = response == output.value[i]
-      values.push({
-        value: response,
-        is_match: isMatch,
-        is_partial: isMatch || output.value.reduce((isPartial, val) => isPartial || val == response, false),
-        is_invalid: false
-      })
+      (${JSON.stringify(v)})`)
+      return response ? (response.toString().substring(0, 3)) : ''
     } catch (e) {
       console.error(e)
-      values.push({
-        value: '',
-        is_match: false,
-        is_partial: false,
-        is_invalid: true
-      })
+      return null
     }
-  }
-  return values
+  })
+
+  return edition.value!
+      .check(transformed.map(t => t || ''))
+      .map((v, i) => {
+        return {
+          value: transformed[i] || '',
+          is_match: v == 'valid',
+          is_partial: v == 'partial',
+          is_invalid: transformed[i] == null
+        }
+      })
 })
 
 const lines = computed<Line[]>(() => {
+  if (!attempt.value) return []
   if (hasWon.value) return attempts.value
   const line: Line = {
     input: prompt.value,
@@ -104,6 +109,17 @@ const lines = computed<Line[]>(() => {
 //== PROVIDE ==//
 
 //== LIFECYCLE HOOK ==//
+onBeforeMount(() => {
+  const puzzle = props.edition
+      ? appStore.universle.edition<'positional_array'>(props.edition)
+      : appStore.universle.latestEdition<'positional_array'>()
+
+  puzzle.then((e) => {
+    edition.value = e
+    input.value = e.payload.input
+    prompt.value = e.payload.prompt
+  })
+})
 
 //== METHOD ==//
 function itemClass(line: Line, item: Attempt) {
@@ -116,6 +132,7 @@ function itemClass(line: Line, item: Attempt) {
 }
 
 function add() {
+  if (!attempt.value) return
   attempts.value.push({
     input: prompt.value,
     output: [...attempt.value],
@@ -129,11 +146,13 @@ function add() {
 </script>
 
 <style lang="scss" scoped>
-// #AAAAAA
-// #212529
-// #04724D
-// #F0EC57
-// #EE4266
+// #F5F5F5 - Text
+// #050517 - BG
+// #AAAAAA - Grey
+// #1B5B3E - Green
+// #F0CD57 - Yellow
+// #8B2635 - Red
+
 .item {
   width: 4rem;
   max-width: calc(calc(100vw - 7rem) / 5);
@@ -153,14 +172,14 @@ function add() {
   }
 
   &.is-partial {
-    background-color: #F0EC57;
-    border-color: #F0EC57;
+    background-color: #F0CD57;
+    border-color: #F0CD57;
     color: #000;
   }
 
   &.is-match {
-    background-color: #04724D;
-    border-color: #04724D;
+    background-color: #1B5B3E;
+    border-color: #1B5B3E;
   }
 }
 </style>
