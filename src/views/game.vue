@@ -1,6 +1,14 @@
 <template>
   <div class="mt-5">
     <div>
+      <template v-if="inputChecked">
+        <div class="d-flex justify-content-center py-2 px-4">
+          <div v-for="item in inputChecked" class="item mx-1" :class="itemClass(null, item)">
+            {{ item.value }}
+          </div>
+        </div>
+        <hr class="my-2 mx-5"/>
+      </template>
       <template v-for="line in lines">
         <div class="d-flex justify-content-center py-2 px-4">
           <div v-for="item in line.output" class="item mx-1" :class="itemClass(line, item)">
@@ -8,7 +16,7 @@
           </div>
         </div>
       </template>
-      <div class="mx-4 px-3 mt-2">
+      <div class="prompt mx-4 px-3 mt-2">
         <div class="row g-2">
           <div class="col col-9 d-flex flex-column align-items-center">
             <input v-model="prompt" :disabled="hasWon" class="form-control form-control-lg" autocorrect="off"
@@ -94,6 +102,19 @@ const shareVisible = ref<boolean>(true)
 const shareCopied = ref<boolean>(false)
 
 //== COMPUTED ==//
+const inputChecked = computed<Attempt[] | null>(() => {
+  if (!edition.value || !input.value) return null
+
+  return edition.value!
+      .check(input.value!.map(i => i || ''))
+      .map((v, i) => ({
+        value: input.value![i] || '',
+        is_match: v == 'valid',
+        is_partial: v == 'partial',
+        is_invalid: false
+      }))
+})
+
 const attempt = computed<Attempt[] | null>(() => {
   if (!edition.value || !input.value) return null
 
@@ -164,8 +185,8 @@ onBeforeMount(() => {
 })
 
 //== METHOD ==//
-function itemClass(line: Line, item: Attempt) {
-  if (!line.is_attempt) return {'is-invalid': item.is_invalid}
+function itemClass(line: Line | null, item: Attempt) {
+  if (line != null && !line.is_attempt) return {'is-invalid': item.is_invalid}
   return {
     'is-match': item.is_match,
     'is-partial': !item.is_match && item.is_partial,
@@ -249,6 +270,18 @@ function shareScore() {
   &.is-match {
     background-color: #1B5B3E;
     border-color: #1B5B3E;
+  }
+}
+
+.prompt {
+  @media screen and (max-width: 768px) {
+    position: fixed;
+    //width: 100vw;
+    left: 0;
+    right: 0;
+    bottom: 35px;
+    //margin-left: 0 !important;
+    //padding-left: 0 !important;
   }
 }
 </style>
