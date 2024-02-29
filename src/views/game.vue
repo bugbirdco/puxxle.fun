@@ -28,7 +28,7 @@
         <div class="modal-body">
           <h3 class="text-center">🎉🎉🎉 YAY 🎉🎉🎉</h3>
           <p>Congrats, you completed Puxxle (edition {{ edition?.edition }}) in {{ attempts.length }}
-            move{{ attempts.length === 1 ? '' : 's' }}</p>
+            guess{{ attempts.length === 1 ? '' : 'ess' }}</p>
           <p><a href="#" @click.prevent="null">Sign in</a> to subscribe and track your scores.</p>
           <p>
             <ConfettiExplosion v-if="hasWon" :force="0.7"/>
@@ -142,7 +142,7 @@ const countDown = computed(() => {
 
   return {
     relative: release.toRelative(),
-    display: release.toFormat("dd LLL yy 'at' hh:mm:ss")
+    display: release.toFormat("dd LLL yy 'at' HH:mm")
   }
 })
 
@@ -203,7 +203,7 @@ function shareScore() {
     }
     content += '\n'
   }
-  content += `Solved in ${attempts.value.length} moves`
+  content += `Solved in ${attempts.value.length} guess${attempts.value.length == 1 ? '' : 'es'}`
   navigator.clipboard.writeText(content)
   shareCopied.value = true
 
