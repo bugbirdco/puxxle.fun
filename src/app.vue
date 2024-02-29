@@ -58,6 +58,11 @@ const uAuth = ref<UniversleAuth>()
 //== LIFECYCLE HOOK ==//
 onBeforeMount(() => {
   appStore.universle.auth().then(v => uAuth.value = v)
+
+  window.visualViewport?.addEventListener('resize', () => {
+    const container = document.querySelector('.game')
+    container?.scrollTo({ top: container.scrollHeight, behavior: 'smooth' })
+  })
 })
 
 //== METHOD ==//

@@ -19,7 +19,7 @@
       <div class="prompt mx-4 px-3 mt-2">
         <div class="row g-2">
           <div class="col col-9 d-flex flex-column align-items-center">
-            <input v-model="prompt" :disabled="hasWon" class="form-control form-control-lg" autocorrect="off"
+            <input ref="promptField" v-model="prompt" :disabled="hasWon" class="form-control form-control-lg" autocorrect="off"
                    autocapitalize="none" @keydown.enter="add"/>
           </div>
           <div class="col">
@@ -100,6 +100,7 @@ const attempts = ref<Line[]>([])
 const hasWon = ref<boolean>(false)
 const shareVisible = ref<boolean>(true)
 const shareCopied = ref<boolean>(false)
+const promptField = ref<HTMLInputElement>()
 
 //== COMPUTED ==//
 const inputChecked = computed<Attempt[] | null>(() => {
@@ -195,6 +196,8 @@ function itemClass(line: Line | null, item: Attempt) {
 }
 
 function add() {
+  promptField.value?.focus()
+
   if (!attempt.value) return
   attempts.value.push({
     input: prompt.value,
