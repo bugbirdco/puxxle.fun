@@ -11,7 +11,8 @@
       <div class="mx-4 px-3 mt-2">
         <div class="row g-2">
           <div class="col col-9 d-flex flex-column align-items-center">
-            <input v-model="prompt" :disabled="hasWon" class="form-control form-control-lg" @keydown.enter="add"/>
+            <input v-model="prompt" :disabled="hasWon" class="form-control form-control-lg" autocorrect="off"
+                   autocapitalize="none" @keydown.enter="add"/>
           </div>
           <div class="col">
             <button type="button" :disabled="hasWon" class="btn btn-primary btn-lg w-100 h-100" @click="add">Go</button>
@@ -31,7 +32,8 @@
           <p><a href="#" @click.prevent="null">Sign in</a> to subscribe and track your scores.</p>
           <p>
             <ConfettiExplosion v-if="hasWon" :force="0.7"/>
-            <a v-if="shareCopied" class="btn btn-success disabled" href="#" @click.prevent="null">Copied to clipboard</a>
+            <a v-if="shareCopied" class="btn btn-success disabled" href="#" @click.prevent="null">Copied to
+              clipboard</a>
             <a v-else class="btn btn-success" href="#" @click.prevent="shareScore">Share your score</a>
           </p>
           <template v-if="countDown">
