@@ -28,7 +28,7 @@
         <div class="modal-body">
           <h3 class="text-center">🎉🎉🎉 YAY 🎉🎉🎉</h3>
           <p>Congrats, you completed Puxxle (edition {{ edition?.edition }}) in {{ attempts.length }}
-            guess{{ attempts.length === 1 ? '' : 'ess' }}</p>
+            guess{{ attempts.length === 1 ? '' : 'es' }}</p>
           <p><a href="#" @click.prevent="null">Sign in</a> to subscribe and track your scores.</p>
           <p>
             <ConfettiExplosion v-if="hasWon" :force="0.7"/>
