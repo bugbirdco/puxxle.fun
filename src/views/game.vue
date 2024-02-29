@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-5">
+  <div class="mt-5 game-stage">
     <div>
       <template v-if="inputChecked">
         <div class="d-flex justify-content-center py-2 px-4">
@@ -60,7 +60,7 @@
 
 <script lang="ts" setup>
 //== GENERAL IMPORTS ==//
-import {computed, ref, onBeforeMount} from "vue";
+import {computed, ref, onBeforeMount, nextTick} from "vue";
 import {UniversleEdition} from "@universle/sdk/src";
 import {DateTime} from "luxon";
 
@@ -202,6 +202,11 @@ function add() {
     is_attempt: true
   })
   hasWon.value = attempt.value.reduce((win, item) => !win ? win : item.is_match, true)
+
+  nextTick(() => {
+    const container = document.querySelector('.game')
+    container?.scrollTo({ top: container.scrollHeight, behavior: 'smooth' })
+  })
 }
 
 function shareScore() {
@@ -282,6 +287,10 @@ function shareScore() {
     bottom: 35px;
     //margin-left: 0 !important;
     //padding-left: 0 !important;
+
+    @at-root .game-stage {
+      margin-bottom: 3rem;
+    }
   }
 }
 </style>
