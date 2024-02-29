@@ -26,7 +26,7 @@
       <div class="modal-content">
         <div class="modal-body">
           <h3 class="text-center">🎉🎉🎉 YAY 🎉🎉🎉</h3>
-          <p>Congrats, you completed Puxxle (eddition {{ edition?.edition }}) in {{ attempts.length }}
+          <p>Congrats, you completed Puxxle (edition {{ edition?.edition }}) in {{ attempts.length }}
             move{{ attempts.length === 1 ? '' : 's' }}</p>
           <p><a href="#" @click.prevent="null">Sign in</a> to subscribe and track your scores.</p>
           <p>
@@ -182,7 +182,7 @@ function add() {
 }
 
 function shareScore() {
-  let content = `Puzzle (edd. ${edition.value?.edition})\n${window.location}\n\n`
+  let content = `Puzzle (ed. ${edition.value?.edition})\n${window.location}\n\n`
   for (let line of attempts.value) {
     for (let cell of line.output) {
       switch (true) {
