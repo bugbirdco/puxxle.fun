@@ -11,7 +11,6 @@
       <div class="mx-4 px-3 mt-2">
         <div class="row g-2">
           <div class="col col-9 d-flex flex-column align-items-center">
-            <ConfettiExplosion v-if="hasWon" :force="0.7"/>
             <input v-model="prompt" :disabled="hasWon" class="form-control form-control-lg" @keydown.enter="add"/>
           </div>
           <div class="col">
@@ -21,12 +20,39 @@
       </div>
     </div>
   </div>
+
+  <div class="modal" :class="{'show d-block': hasWon && shareVisible}">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-body">
+          <h3 class="text-center">🎉🎉🎉 YAY 🎉🎉🎉</h3>
+          <p>Congrats, you completed Puxxle (eddition {{ edition?.edition }}) in {{ attempts.length }}
+            move{{ attempts.length === 1 ? '' : 's' }}</p>
+          <p><a href="#" @click.prevent="null">Sign in</a> to subscribe and track your scores.</p>
+          <p>
+            <ConfettiExplosion v-if="hasWon" :force="0.7"/>
+            <a v-if="shareCopied" class="btn btn-success disabled" href="#" @click.prevent="null">Copied to clipboard</a>
+            <a v-else class="btn btn-success" href="#" @click.prevent="shareScore">Share your score</a>
+          </p>
+          <template v-if="countDown">
+            <hr/>
+            <h5>Next puzzle {{ countDown.relative }}</h5>
+            <p>{{ countDown.display }}</p>
+            <a class="btn btn-secondary" href="#">Subscribe and notify me</a>
+          </template>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
 </template>
 
 <script lang="ts" setup>
 //== GENERAL IMPORTS ==//
 import {computed, ref, onBeforeMount} from "vue";
 import {UniversleEdition} from "@universle/sdk/src";
+import {DateTime} from "luxon";
 
 //== COMPONENT IMPORT ==//
 import ConfettiExplosion from "vue-confetti-explosion";
@@ -62,6 +88,8 @@ const input = ref<any[]>()
 const prompt = ref<string>('x')
 const attempts = ref<Line[]>([])
 const hasWon = ref<boolean>(false)
+const shareVisible = ref<boolean>(true)
+const shareCopied = ref<boolean>(false)
 
 //== COMPUTED ==//
 const attempt = computed<Attempt[] | null>(() => {
@@ -76,7 +104,6 @@ const attempt = computed<Attempt[] | null>(() => {
       (${JSON.stringify(v)})`)
       return response ? (response.toString().substring(0, 3)) : ''
     } catch (e) {
-      console.error(e)
       return null
     }
   })
@@ -102,6 +129,19 @@ const lines = computed<Line[]>(() => {
     is_attempt: false
   }
   return [...attempts.value, line]
+})
+
+const countDown = computed(() => {
+  if (!edition.value || !edition.value?.next_release_at) return null
+
+  const release = DateTime.fromJSDate(edition.value!.next_release_at)
+
+  if (release <= DateTime.now()) return null
+
+  return {
+    relative: release.toRelative(),
+    display: release.toFormat("dd LLL yy 'at' hh:mm:ss")
+  }
 })
 
 //== WATCHER ==//
@@ -139,6 +179,33 @@ function add() {
     is_attempt: true
   })
   hasWon.value = attempt.value.reduce((win, item) => !win ? win : item.is_match, true)
+}
+
+function shareScore() {
+  let content = `Puzzle (edd. ${edition.value?.edition})\n${window.location}\n\n`
+  for (let line of attempts.value) {
+    for (let cell of line.output) {
+      switch (true) {
+        case cell.is_invalid:
+          content += '⬜'
+          break
+        case cell.is_match:
+          content += '🟩'
+          break;
+        case cell.is_partial:
+          content += '🟨'
+          break;
+        default:
+          content += '⬛'
+      }
+    }
+    content += '\n'
+  }
+  content += `Solved in ${attempts.value.length} moves`
+  navigator.clipboard.writeText(content)
+  shareCopied.value = true
+
+  setTimeout(() => shareCopied.value = false, 1500)
 }
 
 //== EXPOSE ==//

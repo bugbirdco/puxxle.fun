@@ -80,7 +80,21 @@ async function login() {
 // #AAAAAA - Grey
 // #1B5B3E - Green
 // #F0CD57 - Yellow
-// #8B2635 - Red
+// #F0CD57 - Red
+
+:root {
+  --bs-body-color: #F5F5F5 !important;
+  --bs-body-bg: #050517 !important;
+  --bs-secondary: #AAAAAA !important;
+  --bs-success: #1B5B3E !important;
+  --bs-warning: #F0CD57 !important;
+  --bs-danger: #F0CD57 !important;
+}
+
+.btn-success {
+  --bs-btn-bg: var(--bs-success) !important;
+  --bs-btn-border-color: var(--bs-success) !important;
+}
 
 .text-green {
   color: #1B5B3E
@@ -116,6 +130,14 @@ async function login() {
     &:hover {
       transform: scale(1.05) rotate(.5deg);
     }
+  }
+}
+
+.modal {
+  .modal-content {
+    color: #F5F5F5;
+    background-color: #050517;
+    box-shadow: -1px 0 0 100vmax rgba(0, 0, 0, .6);
   }
 }
 </style>
