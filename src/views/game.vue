@@ -19,7 +19,8 @@
       <div class="prompt mx-4 px-3 mt-2">
         <div class="row g-2">
           <div class="col col-9 d-flex flex-column align-items-center">
-            <input ref="promptField" v-model="prompt" :disabled="hasWon" class="form-control form-control-lg" autocorrect="off"
+            <input ref="promptField" v-model="prompt" :disabled="hasWon" class="form-control form-control-lg"
+                   autocorrect="off"
                    autocapitalize="none" @keydown.enter="add"/>
           </div>
           <div class="col">
@@ -30,7 +31,7 @@
     </div>
   </div>
 
-  <div class="modal" :class="{'show d-block': hasWon && shareVisible}">
+  <div ref="winModal_" class="modal fade">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-body">
@@ -55,14 +56,80 @@
     </div>
   </div>
 
+  <div ref="winModal_" class="modal fade">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-body">
+          <h3 class="text-center">🎉🎉🎉 YAY 🎉🎉🎉</h3>
+          <p>Congrats, you completed Puxxle (edition {{ edition?.edition }}) in {{ attempts.length }}
+            guess{{ attempts.length === 1 ? '' : 'es' }}</p>
+          <p><a href="#" @click.prevent="null">Sign in</a> to subscribe and track your scores.</p>
+          <p>
+            <ConfettiExplosion v-if="hasWon" :force="0.7"/>
+            <a v-if="shareCopied" class="btn btn-success disabled" href="#" @click.prevent="null">Copied to
+              clipboard</a>
+            <a v-else class="btn btn-success" href="#" @click.prevent="shareScore">Share your score</a>
+          </p>
+          <template v-if="countDown">
+            <hr/>
+            <h5>Next puzzle {{ countDown.relative }}</h5>
+            <p>{{ countDown.display }}</p>
+            <a class="btn btn-secondary" href="#">Subscribe and notify me</a>
+          </template>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div ref="introModal_" class="modal fade">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-body">
+          <h3 class="text-center">What is Paxxle?</h3>
+          <p>Paxxle is a Wordle style game where the aim is to find an array transformation expression.</p>
+
+          <hr/>
+
+          <h6>How to play</h6>
+          <p>The aim of Puxxle is to figure out the order and value of a 5 item array.</p>
+          <h6>The hook?</h6>
+          <p>The array can only be populated through a transformation. You are given an input array, which you map over
+            to create a new array with different values.</p>
+
+          <p>If you place a value in the correct spot, it will be <span class="text match">green</span><br/>
+            If the value exists in the array, it will be <span class="text partial">yellow</span><br/>
+            If there is an error with your expression, the field will be <span class="text invalid">grey</span></p>
+
+          <hr/>
+
+          <h6>You can choose!</h6>
+          <p>Puxxle will accept either a JavaScript or an Excel expression. By default, Puxxle will assume an entry
+            is written in JavaScript, unless the entry starts with an "=" sign.</p>
+          <p>
+            JS example for modulo operation:<br/>
+            <code>x % 5</code><br/>
+            Excel example for modulo operation<br/>
+            <code>=MOD(x, 5)</code>
+          </p>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Start the game!</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
 
 </template>
 
 <script lang="ts" setup>
 //== GENERAL IMPORTS ==//
-import {computed, ref, onBeforeMount, nextTick} from "vue";
+import {computed, ref, onBeforeMount, nextTick, watch, onMounted} from "vue";
 import {UniversleEdition} from "@universle/sdk/src";
 import {DateTime} from "luxon";
+import {Modal} from "bootstrap";
+import {DetailedCellError, HyperFormula} from "hyperformula";
 
 //== COMPONENT IMPORT ==//
 import ConfettiExplosion from "vue-confetti-explosion";
@@ -101,6 +168,8 @@ const hasWon = ref<boolean>(false)
 const shareVisible = ref<boolean>(true)
 const shareCopied = ref<boolean>(false)
 const promptField = ref<HTMLInputElement>()
+const winModal_ = ref<HTMLDivElement>()
+const introModal_ = ref<HTMLDivElement>()
 
 //== COMPUTED ==//
 const inputChecked = computed<Attempt[] | null>(() => {
@@ -121,15 +190,35 @@ const attempt = computed<Attempt[] | null>(() => {
 
   const transformed = input.value.map((v) => {
     try {
-      // Apply the transformation to the item
-      let response = eval(`((x) => {
-        return ${prompt.value}
-      })
-      (${JSON.stringify(v)})`)
-      return response ? (response.toString().substring(0, 3)) : ''
-    } catch (e) {
-      return null
+      const value = JSON.stringify(v);
+      let out;
+      if (prompt.value.substring(0, 1) == '=') {
+        // We are working with an Excel formula
+        const engine = HyperFormula.buildFromArray([[
+          prompt.value
+        ]], {
+          licenseKey: 'gpl-v3'
+        })
+        engine.addNamedExpression('x', `=${value}`)
+        out = engine.getCellValue({col: 0, row: 0, sheet: 0})
+        if (out instanceof DetailedCellError)
+          out = null
+      } else {
+        // We are working with a JS expression
+        // Apply the transformation to the item
+        out = eval(`((x) => {
+          return ${prompt.value}
+        })
+        (${value})`)
+      }
+
+      if (out !== null && out !== undefined)
+        return out.toString().substring(0, 3)
+    } catch (ignore) {
+      console.log(ignore)
     }
+    return null
+
   })
 
   return edition.value!
@@ -168,7 +257,20 @@ const countDown = computed(() => {
   }
 })
 
+const winModal = computed<null | Modal>(() => {
+  if (winModal_.value)
+    return new Modal(winModal_.value)
+  return null
+})
+
+const introModal = computed<null | Modal>(() => {
+  if (introModal_.value)
+    return new Modal(introModal_.value)
+  return null
+})
+
 //== WATCHER ==//
+watch(() => hasWon.value && shareVisible.value, (value) => value && winModal.value?.show())
 
 //== PROVIDE ==//
 
@@ -183,6 +285,10 @@ onBeforeMount(() => {
     input.value = e.payload.input
     prompt.value = e.payload.prompt
   })
+})
+
+onMounted(() => {
+  console.log(introModal.value?.show())
 })
 
 //== METHOD ==//
@@ -206,9 +312,10 @@ function add() {
   })
   hasWon.value = attempt.value.reduce((win, item) => !win ? win : item.is_match, true)
 
+  // Interface mechanics
   nextTick(() => {
     const container = document.querySelector('.game')
-    container?.scrollTo({ top: container.scrollHeight, behavior: 'smooth' })
+    container?.scrollTo({top: container.scrollHeight, behavior: 'smooth'})
   })
 }
 
@@ -278,6 +385,20 @@ function shareScore() {
   &.is-match {
     background-color: #1B5B3E;
     border-color: #1B5B3E;
+  }
+}
+
+.text {
+  &.invalid {
+    color: #aaa;
+  }
+
+  &.partial {
+    color: #F0CD57;
+  }
+
+  &.match {
+    color: #1B5B3E;
   }
 }
 

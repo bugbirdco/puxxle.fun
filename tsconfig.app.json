@@ -18,7 +18,8 @@
       ]
     },
     "types": [
-      "@types/luxon"
+      "@types/luxon",
+      "@types/bootstrap"
     ]
   }
 }
