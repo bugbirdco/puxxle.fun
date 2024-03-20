@@ -85,8 +85,8 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-body">
-          <h3 class="text-center">What is Paxxle?</h3>
-          <p>Paxxle is a Wordle style game where the aim is to find an array transformation expression.</p>
+          <h3 class="text-center">What is Puxxle?</h3>
+          <p>Puxxle is a Wordle style game where the aim is to find an array transformation expression.</p>
 
           <hr/>
 
