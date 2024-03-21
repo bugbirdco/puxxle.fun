@@ -96,8 +96,9 @@
           <p>The array can only be populated through a transformation. You are given an input array, which you map over
             to create a new array with different values.</p>
 
-          <p>If you place a value in the correct spot, it will be <span class="text match">green</span><br/>
-            If the value exists in the array, it will be <span class="text partial">yellow</span><br/>
+          <p>If you place a value in the correct spot, it will be <span class="text match">blue</span><br/>
+            If the value is too high, it will be <span class="text high">green</span><br/>
+            If the value is too low, it will be <span class="text low">red</span><br/>
             If there is an error with your expression, the field will be <span class="text invalid">grey</span></p>
 
           <hr/>
@@ -138,8 +139,9 @@ import ConfettiExplosion from "vue-confetti-explosion";
 interface Attempt {
   value: string,
   is_match: boolean
-  is_partial: boolean
   is_invalid: boolean
+  is_high: boolean
+  is_low: boolean
 }
 
 interface Line {
@@ -160,7 +162,7 @@ const props = defineProps<{
 const appStore = useAppStore()
 
 //== DATA & STATE ==//
-const edition = ref<UniversleEdition<'positional_array'>>()
+const edition = ref<UniversleEdition<'null_array'>>()
 const input = ref<any[]>()
 const prompt = ref<string>('x')
 const attempts = ref<Line[]>([])
@@ -179,9 +181,10 @@ const inputChecked = computed<Attempt[] | null>(() => {
       .check(input.value!.map(i => i || ''))
       .map((v, i) => ({
         value: input.value![i] || '',
-        is_match: v == 'valid',
-        is_partial: v == 'partial',
-        is_invalid: false
+        is_match: v.validity && v.exactly,
+        is_invalid: false,
+        is_high: v.polarity === true,
+        is_low: v.polarity === false
       }))
 })
 
@@ -215,7 +218,6 @@ const attempt = computed<Attempt[] | null>(() => {
       if (out !== null && out !== undefined)
         return out.toString().substring(0, 3)
     } catch (ignore) {
-      console.log(ignore)
     }
     return null
 
@@ -224,11 +226,13 @@ const attempt = computed<Attempt[] | null>(() => {
   return edition.value!
       .check(transformed.map(t => t || ''))
       .map((v, i) => {
+        const value = transformed[i]
         return {
-          value: transformed[i] || '',
-          is_match: v == 'valid',
-          is_partial: v == 'partial',
-          is_invalid: transformed[i] == null
+          value: value || '',
+          is_match: v.validity && v.exactly,
+          is_invalid: false,
+          is_high: value && v.polarity === true,
+          is_low: value && v.polarity === false
         }
       })
 })
@@ -277,8 +281,8 @@ watch(() => hasWon.value && shareVisible.value, (value) => value && winModal.val
 //== LIFECYCLE HOOK ==//
 onBeforeMount(() => {
   const puzzle = props.edition
-      ? appStore.universle.edition<'positional_array'>(props.edition)
-      : appStore.universle.latestEdition<'positional_array'>()
+      ? appStore.universle.edition<'null_array'>(props.edition)
+      : appStore.universle.latestEdition<'null_array'>()
 
   puzzle.then((e) => {
     edition.value = e
@@ -288,7 +292,7 @@ onBeforeMount(() => {
 })
 
 onMounted(() => {
-  console.log(introModal.value?.show())
+  introModal.value?.show()
 })
 
 //== METHOD ==//
@@ -296,7 +300,8 @@ function itemClass(line: Line | null, item: Attempt) {
   if (line != null && !line.is_attempt) return {'is-invalid': item.is_invalid}
   return {
     'is-match': item.is_match,
-    'is-partial': !item.is_match && item.is_partial,
+    'is-high': item.is_high,
+    'is-low': item.is_low,
     'is-invalid': item.is_invalid
   }
 }
@@ -328,10 +333,13 @@ function shareScore() {
           content += '⬜'
           break
         case cell.is_match:
+          content += '🟦'
+          break;
+        case cell.is_high:
           content += '🟩'
           break;
-        case cell.is_partial:
-          content += '🟨'
+        case cell.is_low:
+          content += '🟥'
           break;
         default:
           content += '⬛'
@@ -351,12 +359,7 @@ function shareScore() {
 </script>
 
 <style lang="scss" scoped>
-// #F5F5F5 - Text
-// #050517 - BG
-// #AAAAAA - Grey
-// #1B5B3E - Green
-// #F0CD57 - Yellow
-// #8B2635 - Red
+@import "../styles/colours";
 
 .item {
   width: 4rem;
@@ -376,29 +379,43 @@ function shareScore() {
     background-color: #aaa;
   }
 
-  &.is-partial {
-    background-color: #F0CD57;
-    border-color: #F0CD57;
-    color: #000;
+  &.is-high {
+    background-color: rgba($green, .8);
+    border-color: rgba($green, .8);
+    color: $text;
+  }
+
+  &.is-low {
+    background-color: rgba($red, .8);
+    border-color: rgba($red, .8);
+    color: $text;
   }
 
   &.is-match {
-    background-color: #1B5B3E;
-    border-color: #1B5B3E;
+    background-color: $blue;
+    border-color: $blue;
   }
 }
 
 .text {
   &.invalid {
-    color: #aaa;
+    color: $grey;
   }
 
   &.partial {
-    color: #F0CD57;
+    color: $yellow;
+  }
+
+  &.high {
+    color: $green;
+  }
+
+  &.low {
+    color: $red;
   }
 
   &.match {
-    color: #1B5B3E;
+    color: $blue;
   }
 }
 

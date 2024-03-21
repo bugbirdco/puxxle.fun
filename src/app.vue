@@ -3,7 +3,7 @@
     <nav class="navbar row row-cols-3 g-0 px-3">
       <div class="col"/>
       <a class="col text-center navbar-brand mx-0" href="/">
-        <h2 class="mb-0">Pu<span class="text-green">x</span><span class="text-yellow">x</span>le</h2>
+        <h2 class="mb-0">Pu<span class="text-green">x</span><span class="text-red">x</span>le</h2>
       </a>
       <div class="col text-end">
         <ul class="navbar-nav">
@@ -61,7 +61,7 @@ onBeforeMount(() => {
 
   window.visualViewport?.addEventListener('resize', () => {
     const container = document.querySelector('.game')
-    container?.scrollTo({ top: container.scrollHeight, behavior: 'smooth' })
+    container?.scrollTo({top: container.scrollHeight, behavior: 'smooth'})
   })
 })
 
@@ -80,20 +80,15 @@ async function login() {
 </script>
 
 <style lang="scss">
-// #F5F5F5 - Text
-// #050517 - BG
-// #AAAAAA - Grey
-// #1B5B3E - Green
-// #F0CD57 - Yellow
-// #F0CD57 - Red
+@import "./styles/colours";
 
 :root {
-  --bs-body-color: #F5F5F5 !important;
-  --bs-body-bg: #050517 !important;
-  --bs-secondary: #AAAAAA !important;
-  --bs-success: #1B5B3E !important;
-  --bs-warning: #F0CD57 !important;
-  --bs-danger: #F0CD57 !important;
+  --bs-body-color: #{$text} !important;
+  --bs-body-bg: #{$bg} !important;
+  --bs-secondary: #{$grey} !important;
+  --bs-success: #{$green} !important;
+  --bs-warning: #{$yellow} !important;
+  --bs-danger: #{$red} !important;
 }
 
 .btn-success {
@@ -102,11 +97,15 @@ async function login() {
 }
 
 .text-green {
-  color: #1B5B3E
+  color: $green
 }
 
 .text-yellow {
-  color: #F0CD57
+  color: $yellow
+}
+
+.text-red {
+  color: $red
 }
 
 .screen-w {
@@ -116,17 +115,17 @@ async function login() {
 
 .game {
   font-family: "Karla", sans-serif;
-  background-color: #050517;
-  color: #F5F5F5;
+  background-color: $bg;
+  color: $text;
 }
 
 .navbar {
-  color: #AAAAAA;
-  background-color: #050517;
-  border-bottom: 1px solid #AAAAAA;
+  color: $grey;
+  background-color: $bg;
+  border-bottom: 1px solid $grey;
 
   .navbar-brand, .nav-link {
-    color: #F5F5F5 !important;
+    color: $text !important;
   }
 
   .navbar-brand {
@@ -140,8 +139,8 @@ async function login() {
 
 .modal {
   .modal-content {
-    color: #F5F5F5;
-    background-color: #050517;
+    color: $text;
+    background-color: $bg;
     box-shadow: -1px 0 0 100vmax rgba(0, 0, 0, .6);
   }
 }
